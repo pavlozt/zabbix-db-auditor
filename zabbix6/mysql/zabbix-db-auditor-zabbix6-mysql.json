@@ -1,0 +1,1035 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_ZABBIX-DB-AUDITOR-MYSQL",
+      "label": "zabbix-db-auditor-mysql",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "mysql",
+      "pluginName": "MySQL"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.4.14"
+    },
+    {
+      "type": "panel",
+      "id": "marcusolsson-treemap-panel",
+      "name": "Treemap",
+      "version": "2.0.1"
+    },
+    {
+      "type": "datasource",
+      "id": "mysql",
+      "name": "MySQL",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "piechart",
+      "name": "Pie chart",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "panels": [],
+      "title": "Totals",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": false
+      },
+      "pluginVersion": "10.4.14",
+      "targets": [
+        {
+          "dataset": "performance_schema",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "-- items\r\nSELECT\r\n    'Items' AS type,\r\n    count(i.itemid) as count\r\nfrom\r\n    items i\r\njoin hosts h on\r\n    (i.hostid = h.hostid)\r\nwhere\r\n    not i.type = 9\r\n    and i.flags in (0, 4)\r\n    and h.status = 0\r\n    and h.flags = 0\r\nUNION ALL\r\n-- hosts\r\nSELECT\r\n    'Hosts' AS type,\r\n    COUNT(*) AS count\r\nFROM\r\n    hosts\r\nWHERE\r\n    hosts.status = 0\r\n    and flags = 0\r\nUNION ALL\r\n-- host groups\r\nSELECT\r\n    'Groups' AS type,\r\n    COUNT(*) AS count\r\nFROM\r\n    hstgrp h\r\nwhere\r\n    type = 0\r\nUNION ALL\r\n-- templates\r\nSELECT\r\n    'Templates' AS type,\r\n    COUNT(*) AS count\r\nFROM\r\n    hosts\r\nWHERE\r\n    status = 3\r\nunion    \r\n-- have partitions\r\nSELECT\r\n    'Partitioned' AS type,\r\n    CASE\r\n        WHEN EXISTS (\r\n            SELECT 1\r\n            FROM INFORMATION_SCHEMA.PARTITIONS\r\n            WHERE TABLE_SCHEMA = database()\r\n              AND TABLE_NAME = 'history'\r\n        )\r\n        THEN 'Yes'\r\n        ELSE 'No'\r\n    END AS has_partitions\r\nunion     \r\n -- compressed\r\nSELECT\r\n    'Compressed' AS type,\r\n    CASE\r\n        WHEN EXISTS (\r\n            SELECT 1\r\n            FROM INFORMATION_SCHEMA.TABLES\r\n            WHERE TABLE_SCHEMA = database()\r\n              AND TABLE_NAME = 'history'\r\n              and create_options like  '%COMPRESSED%'\r\n        )\r\n        THEN 'Yes'\r\n        ELSE 'No'\r\n    END AS compressed\r\n\r\n ;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Stats",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bytes"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 6,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "right",
+          "showLegend": false,
+          "values": []
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.14",
+      "targets": [
+        {
+          "dataset": "performance_schema",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n    table_name as 'table',\r\n    -- table_rows AS 'rows',\r\n    data_length + index_length AS bytes\r\nFROM\r\n    information_schema.tables\r\nWHERE\r\n    table_schema = DATABASE()\r\n    AND table_name IN ('history', 'history_uint', 'history_str', 'history_text', 'history_log', 'history_bin', 'trends', 'trends_uint')\r\norder by bytes desc",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Zabbix values tables",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bytes"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              },
+              {
+                "id": "custom.width",
+                "value": 106
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "compressed"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 83
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "table"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 124
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "values"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 114
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "partitioned"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "partitions"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 107
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 13,
+        "x": 11,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": [],
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "bytes"
+          }
+        ]
+      },
+      "pluginVersion": "10.4.14",
+      "targets": [
+        {
+          "dataset": "performance_schema",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\r\n    t.table_name AS 'table',\r\n    t.table_rows AS 'values',\r\n    t.data_length + t.index_length AS bytes,\r\n    COUNT(p.partition_name) AS 'partitions',    \r\n    CASE\r\n        WHEN t.create_options LIKE '%row_format=COMPRESSED%' THEN '☑'\r\n        ELSE '☐'\r\n    END AS 'compressed',\r\n    CASE\r\n        WHEN t.create_options LIKE '%partitioned%' THEN '☑'\r\n        ELSE '☐'\r\n    END AS 'partitioned'\r\nFROM\r\n    information_schema.tables t\r\nLEFT JOIN\r\n    information_schema.partitions p\r\nON\r\n    t.table_schema = p.table_schema\r\n    AND t.table_name = p.table_name\r\nWHERE\r\n    t.table_schema = DATABASE()\r\n    AND t.table_name IN ('history', 'history_uint', 'history_str', 'history_text', 'history_log', 'history_bin', 'trends', 'trends_uint')\r\nGROUP BY\r\n    t.table_name, t.table_rows, t.data_length, t.index_length, t.create_options\r\nORDER BY\r\n    bytes DESC;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Zabbix values tables",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Estimated by host",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+      },
+      "description": "Estimated items count based on Update interval and History settings of items. Not based on current time selection.\n\nCalculation does not include some types of flexible intervals, but works good in common situations. In case of partitioning enabled or external Housekeeper, the history setting is not used for cleaning old data.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 8,
+      "options": {
+        "colorByField": "total_planned_items",
+        "groupByField": "groupname",
+        "labelFields": [
+          "percentage_share"
+        ],
+        "sizeField": "total_planned_items",
+        "textField": "hostname",
+        "tiling": "treemapSquarify"
+      },
+      "targets": [
+        {
+          "dataset": "performance_schema",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH RECURSIVE item_hierarchy AS (\r\n    -- Anchor member: select items with no master_itemid\r\n    SELECT\r\n        i.itemid,\r\n        i.flags,\r\n        i.hostid,\r\n        i.name,\r\n        i.delay,\r\n        i.history,\r\n        i.master_itemid,\r\n        1 AS level\r\n    FROM\r\n        items i\r\n    WHERE\r\n        i.master_itemid IS NULL\r\n\r\n    UNION ALL\r\n\r\n    -- Recursive member: select items with master_itemid\r\n    SELECT\r\n        i.itemid,\r\n        i.flags,\r\n        i.hostid,\r\n        i.name,\r\n        ih.delay,\r\n        i.history,\r\n        i.master_itemid,\r\n        ih.level + 1\r\n    FROM\r\n        items i\r\n    JOIN\r\n        item_hierarchy ih ON i.master_itemid = ih.itemid\r\n)\r\n, base_query AS (\r\n    SELECT\r\n      hg.name as groupname,\r\n      h.name as hostname,\r\n      sum(\r\n        CASE\r\n            WHEN ih.delay REGEXP '^[0-9]+[smhd]$' THEN\r\n                CASE\r\n                    WHEN RIGHT(ih.delay, 1) = 's' THEN\r\n                        86400 / NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0)\r\n                    WHEN RIGHT(ih.delay, 1) = 'm' THEN\r\n                        86400 / (60 * NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0))\r\n                    WHEN RIGHT(ih.delay, 1) = 'h' THEN\r\n                        86400 / (3600 * NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0))\r\n                    WHEN RIGHT(ih.delay, 1) = 'd' THEN\r\n                        86400 / (86400 * NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0))\r\n                    ELSE\r\n                        NULL\r\n                END\r\n            WHEN ih.delay REGEXP '^[0-9]+$' THEN\r\n                86400 / NULLIF(CAST(ih.delay AS UNSIGNED), 0)\r\n            ELSE\r\n                NULL\r\n        END * CASE\r\n                WHEN RIGHT(history, 1) = 's' THEN CAST(SUBSTRING(history, 1, LENGTH(history) - 1) AS UNSIGNED) / 86400\r\n                WHEN RIGHT(history, 1) = 'm' THEN CAST(SUBSTRING(history, 1, LENGTH(history) - 1) AS UNSIGNED) / 1440\r\n                WHEN RIGHT(history, 1) = 'h' THEN CAST(SUBSTRING(history, 1, LENGTH(history) - 1) AS UNSIGNED) / 24\r\n                WHEN RIGHT(history, 1) = 'w' THEN CAST(SUBSTRING(history, 1, LENGTH(history) - 1) AS UNSIGNED) * 7\r\n                WHEN RIGHT(history, 1) = 'd' THEN CAST(SUBSTRING(history, 1, LENGTH(history) - 1) AS UNSIGNED)\r\n                ELSE CAST(history AS UNSIGNED) / 86400 -- no modificator - seconds\r\n            END\r\n         ) AS total_planned_items\r\n    FROM\r\n        item_hierarchy ih\r\n    JOIN\r\n        hosts h ON h.hostid = ih.hostid\r\n    JOIN\r\n        hosts_groups hg_h ON h.hostid = hg_h.hostid\r\n    JOIN\r\n        hstgrp hg ON hg_h.groupid = hg.groupid\r\n    WHERE\r\n        ih.flags IN (0, 4)  -- filter out prototype items\r\n        AND hg.type = 0     -- filter out special template groups\r\n        and h.status = 0 -- enabled hosts\r\n        and h.flags = 0  -- normal not template host\r\n        AND (\r\n            0 in (${groups:csv}) or\r\n            (hg.groupid IN (${groups:csv}))\r\n        )\r\n        and (  -- Hosts filter\r\n            0 in (${hosts:csv}) or\r\n            (h.hostid IN (${hosts:csv}))\r\n        )\r\n    GROUP BY hg.name, h.name\r\n)\r\nSELECT\r\n    groupname,\r\n    hostname,\r\n    total_planned_items,\r\n    concat(ROUND(100 * total_planned_items / SUM(total_planned_items) OVER (), 2),' %') AS percentage_share\r\nFROM\r\n    base_query\r\nORDER BY\r\n    total_planned_items;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Estimated items count by host",
+      "type": "marcusolsson-treemap-panel"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 13,
+      "panels": [],
+      "title": "Estimated by templates",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+      },
+      "description": "Estimated items count based on Update interval and History settings of items and split by Templates. Not based on current time selection.\n\nCalculation does not include some types of flexible intervals, but works good in common situations. In case of partitioning enabled or external Housekeeper, the history setting is not used for cleaning old data.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 14,
+      "options": {
+        "colorByField": "total_planned_items",
+        "labelFields": [
+          "percentage_share",
+          "hosts_count"
+        ],
+        "sizeField": "total_planned_items",
+        "textField": "template_name",
+        "tiling": "treemapSquarify"
+      },
+      "targets": [
+        {
+          "dataset": "performance_schema",
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH RECURSIVE item_hierarchy AS (\r\n    -- Anchor member: select items with no master_itemid\r\n    SELECT\r\n        i.itemid,\r\n        i.flags,\r\n        i.hostid,\r\n        i.name,\r\n        i.delay,\r\n        i.history,\r\n        i.master_itemid,\r\n        i.templateid,\r\n        1 AS level\r\n    FROM\r\n        items i\r\n    WHERE\r\n        i.master_itemid IS NULL\r\n\r\n    UNION ALL\r\n\r\n    -- Recursive member: select items with master_itemid\r\n    SELECT\r\n        i.itemid,\r\n        i.flags,\r\n        i.hostid,\r\n        i.name,\r\n        ih.delay,\r\n        i.history,\r\n        i.master_itemid,\r\n        i.templateid,\r\n        ih.level + 1\r\n    FROM\r\n        items i\r\n    JOIN\r\n        item_hierarchy ih ON i.master_itemid = ih.itemid\r\n),\r\nbase_query AS (\r\n    SELECT\r\n        ht.name AS template_name,\r\n        SUM(\r\n            CASE\r\n                WHEN ih.delay REGEXP '^[0-9]+[smhd]$' THEN\r\n                    CASE\r\n                        WHEN RIGHT(ih.delay, 1) = 's' THEN\r\n                            86400 / NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0)\r\n                        WHEN RIGHT(ih.delay, 1) = 'm' THEN\r\n                            86400 / (60 * NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0))\r\n                        WHEN RIGHT(ih.delay, 1) = 'h' THEN\r\n                            86400 / (3600 * NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0))\r\n                        WHEN RIGHT(ih.delay, 1) = 'd' THEN\r\n                            86400 / (86400 * NULLIF(CAST(SUBSTRING(ih.delay, 1, LENGTH(ih.delay) - 1) AS UNSIGNED), 0))\r\n                        ELSE\r\n                            NULL\r\n                    END\r\n                WHEN ih.delay REGEXP '^[0-9]+$' THEN\r\n                    86400 / NULLIF(CAST(ih.delay AS UNSIGNED), 0)\r\n                ELSE\r\n                    NULL\r\n            END * CASE\r\n                    WHEN RIGHT(ih.history, 1) = 's' THEN CAST(SUBSTRING(ih.history, 1, LENGTH(ih.history) - 1) AS UNSIGNED) / 86400\r\n                    WHEN RIGHT(ih.history, 1) = 'm' THEN CAST(SUBSTRING(ih.history, 1, LENGTH(ih.history) - 1) AS UNSIGNED) / 1440\r\n                    WHEN RIGHT(ih.history, 1) = 'h' THEN CAST(SUBSTRING(ih.history, 1, LENGTH(ih.history) - 1) AS UNSIGNED) / 24\r\n                    WHEN RIGHT(ih.history, 1) = 'w' THEN CAST(SUBSTRING(ih.history, 1, LENGTH(ih.history) - 1) AS UNSIGNED) * 7\r\n                    WHEN RIGHT(ih.history, 1) = 'd' THEN CAST(SUBSTRING(ih.history, 1, LENGTH(ih.history) - 1) AS UNSIGNED)\r\n                    ELSE CAST(ih.history AS UNSIGNED) / 86400 -- no modificator - seconds\r\n                END\r\n             ) AS total_planned_items,\r\n        CONCAT('Hosts: ', COUNT(DISTINCT ih.hostid)) AS hosts_count\r\n    FROM\r\n        item_hierarchy ih\r\n    JOIN\r\n        items ti ON (ih.templateid = ti.itemid) -- templated items\r\n    JOIN\r\n        hosts ht ON (ti.hostid = ht.hostid) -- host-templates . here is template name\r\n    JOIN\r\n        hosts h ON h.hostid = ih.hostid  -- normal hosts\r\n    JOIN\r\n        hosts_groups hg_h ON h.hostid = hg_h.hostid\r\n    JOIN\r\n        hstgrp hg ON hg_h.groupid = hg.groupid\r\n    WHERE\r\n        ih.flags IN (0, 4)  -- filter out prototype items\r\n        AND hg.type = 0     -- filter out special template groups\r\n        AND h.status = 0 -- enabled hosts\r\n        AND h.flags = 0  -- normal not template host\r\n        AND ( -- group filter\r\n            0 IN (${groups:csv}) OR\r\n            (hg.groupid IN (${groups:csv}))\r\n        )\r\n        AND (  -- Hosts filter\r\n            0 IN (${hosts:csv}) OR\r\n            (h.hostid IN (${hosts:csv}))\r\n        )\r\n        AND ih.templateid IS NOT NULL -- items is not part of template\r\n    GROUP BY\r\n        template_name\r\n)\r\nSELECT\r\n    template_name,\r\n    total_planned_items,\r\n    hosts_count,\r\n    concat(ROUND(100 * total_planned_items / SUM(total_planned_items) OVER (), 2),' %') AS percentage_share\r\nFROM\r\n    base_query\r\nORDER BY\r\n    total_planned_items;\r\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Estimated items count by template",
+      "type": "marcusolsson-treemap-panel"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 9,
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "description": "Items stored in database based of current time selection. Orphaned items also included.\n\nIt is not recommended to set too large a time interval for calculation.It is strongly recommended to use partitioning in the database.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 16,
+            "w": 24,
+            "x": 0,
+            "y": 37
+          },
+          "id": 11,
+          "options": {
+            "colorByField": "records_count",
+            "groupByField": "groupname",
+            "labelFields": [
+              "percentage_share"
+            ],
+            "sizeField": "records_count",
+            "textField": "hostname",
+            "tiling": "treemapSquarify"
+          },
+          "targets": [
+            {
+              "dataset": "performance_schema",
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "WITH base_query AS (\r\n    SELECT\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(hg.name, 'orphaned items')\r\n            ELSE hg.name\r\n        END AS groupname,\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(h.name, 'orphaned items')\r\n            ELSE h.name\r\n        END AS hostname,\r\n        SUM(ru.records_count) AS records_count\r\n    FROM\r\n        (\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_uint h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_str h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_log h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_text h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_bin h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n        ) ru\r\n    LEFT JOIN items i ON (ru.itemid = i.itemid)\r\n    LEFT JOIN hosts h ON (i.hostid = h.hostid)\r\n    LEFT JOIN hosts_groups hg_h ON (h.hostid = hg_h.hostid)\r\n    LEFT JOIN hstgrp hg ON (hg_h.groupid = hg.groupid)\r\n    WHERE\r\n        (hg.type = 0 OR hg.type IS NULL)\r\n        AND (\r\n            0 IN (${groups:csv}) OR\r\n            (hg.groupid IN (${groups:csv}) OR hg.groupid IS NULL)\r\n        )\r\n    GROUP BY\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(hg.name, 'orphaned items')\r\n            ELSE hg.name\r\n        END,\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(h.name, 'orphaned items')\r\n            ELSE h.name\r\n        END\r\n)\r\nSELECT\r\n    groupname,\r\n    hostname,\r\n    records_count,\r\n    concat(ROUND(100 * records_count / SUM(records_count) OVER (), 2),' %') AS percentage_share\r\nFROM\r\n    base_query\r\nORDER BY\r\n    records_count;\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Stored items (time selection)",
+          "type": "marcusolsson-treemap-panel"
+        }
+      ],
+      "title": "Items by host",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 10,
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "description": "Size in bytes of Items stored in database based of current time selection. Calculated by LENGTH() function. Float, integers, logs, string,text values counted here. Orphaned items also included. Compression does not affect these numbers.\n\nIt is not recommended to set too large a time interval for calculation.It is strongly recommended to use partitioning in the database.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 16,
+            "w": 24,
+            "x": 0,
+            "y": 38
+          },
+          "id": 12,
+          "options": {
+            "colorByField": "bytes",
+            "groupByField": "groupname",
+            "labelFields": [
+              "percentage_share"
+            ],
+            "sizeField": "bytes",
+            "textField": "hostname",
+            "tiling": "treemapSquarify"
+          },
+          "targets": [
+            {
+              "dataset": "performance_schema",
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "WITH base_query AS (\r\n    SELECT\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(hg.name, 'orphaned items')\r\n            ELSE hg.name\r\n        END AS groupname,\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(h.name, 'orphaned items')\r\n            ELSE h.name\r\n        END AS hostname,\r\n        SUM(ru.bytes) AS bytes\r\n    FROM\r\n        (\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) * (16 + 8) AS bytes\r\n            FROM\r\n                history h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) * (16 + 4) AS bytes\r\n            FROM\r\n                history_uint h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_str h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_log h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_text h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_bin h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n        ) ru\r\n    LEFT JOIN items i ON (ru.itemid = i.itemid)\r\n    LEFT JOIN hosts h ON (i.hostid = h.hostid)\r\n    LEFT JOIN hosts_groups hg_h ON (h.hostid = hg_h.hostid)\r\n    LEFT JOIN hstgrp hg ON (hg_h.groupid = hg.groupid)\r\n    WHERE\r\n        (hg.type = 0 OR hg.type IS NULL)\r\n        AND (\r\n            0 IN (${groups:csv}) OR\r\n            (hg.groupid IN (${groups:csv}) OR hg.groupid IS NULL)\r\n        )\r\n    GROUP BY\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(hg.name, 'orphaned items')\r\n            ELSE hg.name\r\n        END,\r\n        CASE\r\n            WHEN 0 IN (${groups:csv}) THEN COALESCE(h.name, 'orphaned items')\r\n            ELSE h.name\r\n        END\r\n)\r\nSELECT\r\n    groupname,\r\n    hostname,\r\n    bytes,\r\n    CONCAT(ROUND(100 * bytes / SUM(bytes) OVER (), 2), ' %') AS percentage_share\r\nFROM\r\n    base_query\r\nORDER BY\r\n    bytes;\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Stored bytes (time selection)",
+          "type": "marcusolsson-treemap-panel"
+        }
+      ],
+      "title": "Storage size by host",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 16,
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "description": "Items stored in database based of current time selection. Orphaned items also included.\n\nIt is not recommended to set too large a time interval for calculation.It is strongly recommended to use partitioning in the database.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 16,
+            "w": 24,
+            "x": 0,
+            "y": 39
+          },
+          "id": 18,
+          "options": {
+            "colorByField": "records_count",
+            "labelFields": [
+              "percentage_share",
+              "hosts_count"
+            ],
+            "sizeField": "records_count",
+            "textField": "template_name",
+            "tiling": "treemapSquarify"
+          },
+          "targets": [
+            {
+              "dataset": "performance_schema",
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "WITH base_query AS (\r\n    SELECT\r\n        ht.name AS template_name,\r\n        SUM(ru.records_count) AS records_count,\r\n        COUNT(DISTINCT i.hostid) AS hosts_count\r\n    FROM\r\n        (\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_uint h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_str h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_log h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_text h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) AS records_count\r\n            FROM\r\n                history_bin h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n        ) ru\r\n    LEFT JOIN items i ON (ru.itemid = i.itemid)\r\n    LEFT JOIN hosts h ON (i.hostid = h.hostid)\r\n    LEFT JOIN hosts_groups hg_h ON (h.hostid = hg_h.hostid)\r\n    LEFT JOIN hstgrp hg ON (hg_h.groupid = hg.groupid)\r\n    JOIN items ti ON (i.templateid = ti.itemid) -- templated items\r\n    LEFT JOIN hosts ht ON (ti.hostid = ht.hostid) -- host-templates . here is template name\r\n    WHERE\r\n        (hg.type = 0 OR hg.type IS NULL)\r\n        AND (\r\n            0 IN (${groups:csv}) OR\r\n            (hg.groupid IN (${groups:csv}) OR hg.groupid IS NULL)\r\n        )\r\n    GROUP BY\r\n        ht.name\r\n)\r\nSELECT\r\n    template_name,\r\n    records_count,\r\n    CONCAT('Hosts: ', hosts_count) as hosts_count,\r\n    CONCAT(ROUND(100 * records_count / SUM(records_count) OVER (), 2), ' %') AS percentage_share\r\nFROM\r\n    base_query\r\nORDER BY\r\n    records_count;\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Stored items (time selection)",
+          "type": "marcusolsson-treemap-panel"
+        }
+      ],
+      "title": "Items by template",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "id": 17,
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+          },
+          "description": "Items stored in database based of current time selection. Orphaned items also included. Compression does not affect these numbers.\n\nIt is not recommended to set too large a time interval for calculation.It is strongly recommended to use partitioning in the database.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 16,
+            "w": 24,
+            "x": 0,
+            "y": 40
+          },
+          "id": 19,
+          "options": {
+            "colorByField": "bytes",
+            "groupByField": "groupname",
+            "labelFields": [
+              "percentage_share"
+            ],
+            "sizeField": "bytes",
+            "textField": "template_name",
+            "tiling": "treemapSquarify"
+          },
+          "targets": [
+            {
+              "dataset": "performance_schema",
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "WITH base_query AS (\r\n    SELECT\r\n        ht.name AS template_name,\r\n        SUM(ru.bytes) AS bytes\r\n    FROM\r\n        (\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) * (16 + 8) AS bytes\r\n            FROM\r\n                history h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                COUNT(*) * (16 + 4) AS bytes\r\n            FROM\r\n                history_uint h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_str h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_log h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_text h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n            UNION ALL\r\n            SELECT\r\n                h.itemid AS itemid,\r\n                SUM(LENGTH(value)) AS bytes\r\n            FROM\r\n                history_bin h\r\n            WHERE\r\n                clock BETWEEN UNIX_TIMESTAMP($__timeFrom())\r\n                AND UNIX_TIMESTAMP($__timeTo())\r\n            GROUP BY\r\n                h.itemid\r\n        ) ru\r\n    LEFT JOIN items i ON (ru.itemid = i.itemid)\r\n    LEFT JOIN hosts h ON (i.hostid = h.hostid)\r\n    LEFT JOIN hosts_groups hg_h ON (h.hostid = hg_h.hostid)\r\n    LEFT JOIN hstgrp hg ON (hg_h.groupid = hg.groupid)\r\n    JOIN items ti ON (i.templateid = ti.itemid) -- templated items\r\n    LEFT JOIN hosts ht ON (ti.hostid = ht.hostid) -- host-templates . here is template name\r\n    WHERE\r\n        (hg.type = 0 OR hg.type IS NULL)\r\n        AND (\r\n            0 IN (${groups:csv}) OR\r\n            (hg.groupid IN (${groups:csv}) OR hg.groupid IS NULL)\r\n        )\r\n    GROUP BY\r\n        ht.name\r\n)\r\nSELECT\r\n    template_name,\r\n    bytes,\r\n    CONCAT(ROUND(100 * bytes / SUM(bytes) OVER (), 2), ' %') AS percentage_share\r\nFROM\r\n    base_query\r\nORDER BY\r\n    bytes;\r\n",
+              "refId": "A",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          ],
+          "title": "Stored items (time selection)",
+          "type": "marcusolsson-treemap-panel"
+        }
+      ],
+      "title": "Storage size by template",
+      "type": "row"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "zabbix",
+    "resource"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": "0",
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+        },
+        "definition": "SELECT DISTINCT hg.name as __text,hg.groupid as __value\nFROM hstgrp hg\nJOIN hosts_groups hg_h ON hg.groupid = hg_h.groupid\nJOIN hosts h ON hg_h.hostid = h.hostid\nwhere hg.`type`=0",
+        "hide": 0,
+        "includeAll": true,
+        "label": "groups",
+        "multi": true,
+        "name": "groups",
+        "options": [],
+        "query": "SELECT DISTINCT hg.name as __text,hg.groupid as __value\nFROM hstgrp hg\nJOIN hosts_groups hg_h ON hg.groupid = hg_h.groupid\nJOIN hosts h ON hg_h.hostid = h.hostid\nwhere hg.`type`=0",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "mysql",
+          "uid": "${DS_ZABBIX-DB-AUDITOR-MYSQL}"
+        },
+        "definition": "SELECT DISTINCT h.name as __text, h.hostid as __value\nFROM hosts h\nJOIN hosts_groups hg_h ON h.hostid = hg_h.hostid\nJOIN hstgrp hg ON hg_h.groupid = hg.groupid\nWHERE hg.type = 0\nAND (\n  0 in (${groups:csv}) or\n  (hg.groupid IN (${groups:csv}))\n);\n",
+        "description": "",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Hosts",
+        "multi": true,
+        "name": "hosts",
+        "options": [],
+        "query": "SELECT DISTINCT h.name as __text, h.hostid as __value\nFROM hosts h\nJOIN hosts_groups hg_h ON h.hostid = hg_h.hostid\nJOIN hstgrp hg ON hg_h.groupid = hg.groupid\nWHERE hg.type = 0\nAND (\n  0 in (${groups:csv}) or\n  (hg.groupid IN (${groups:csv}))\n);\n",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Zabbix DB Auditor",
+  "uid": "de8pwd09cvyf4d",
+  "version": 12,
+  "weekStart": ""
+}

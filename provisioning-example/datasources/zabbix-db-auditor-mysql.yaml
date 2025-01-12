@@ -1,0 +1,15 @@
+apiVersion: 1
+datasources:
+  - name: zabbix-db-auditor-mysql
+    type: mysql
+    url: mysql-server:3306
+    uid: "ds_sys_zabbix_db_auditor_mysql"
+    user: ${ZABBIX_DB_AUDITOR_MYSQL_USER}
+    jsonData:
+      database: ${ZABBIX_DB_AUDITOR_MYSQL_DB}
+      maxOpenConns: 5
+      maxIdleConns: 1
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+    secureJsonData:
+      password: $__file{/run/secrets/ZABBIX_DB_AUDITOR_MYSQL_PASSWORD}
