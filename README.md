@@ -78,9 +78,11 @@ The quick estimation  panel works fast enough without these extensions.
 
 ## Caveats
 
+- Zabbix items with flexible intervals not fully supported at the estimation dashboard, so it is suggested to calculate the actual items count. These dashboard elements are collapsed by default.
+
 - Although the dashboard allows you to estimate which elements consume the most resources, it is almost impossible to calculate with byte accuracy. Service data, compression and fragmentation affect this.
 
-- Even though this is a Zabbix dashboard, it does not use access via API and a special plugin. You need direct network access to the Zabbix database.
+- Even though this is a Zabbix dashboard, it does not use access via API and a special Zabbix Grafana plugin. You need direct network access to the Zabbix database.
 
 ## Contributing
 
