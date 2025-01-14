@@ -43,7 +43,7 @@ in first, create user:
  - make sure MySQL  is not accessible from (container) network
 
 ```sql
-CREATE_USER 'zabbix_db_auditor'@'%' IDENTIFIED BY 'pas_WoRD#!sw';
+CREATE USER 'zabbix_db_auditor'@'%' IDENTIFIED BY 'pas_WoRD#!sw';
 GRANT USAGE ON zabbix.* TO 'zabbix_db_auditor'@'%';
 ```
 
