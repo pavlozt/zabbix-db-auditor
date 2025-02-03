@@ -6,11 +6,11 @@ GRANT SELECT (hostid, name, status, flags)
 ON hosts
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT (hostid, groupid)
+GRANT SELECT
 ON hosts_groups
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT (groupid, type,name)
+GRANT SELECT
 ON hstgrp
 TO 'zabbix_db_auditor'@'%';
 
