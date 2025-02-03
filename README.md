@@ -60,9 +60,7 @@ Often tables in Zabbix contain a lot of access data. But access to data in Grafa
 
 Query sets differ for Zabbix versions and the selected database type.
 Therefore, you need to upload to Grafana the corresponding file with the dashboard.
- - [Zabbix 6 - MySQL](zabbix6/mysql/zabbix-db-auditor-zabbix6-mysql.json)
- - [Zabbix 7 - MySQL](dashboards/mysql/zabbix-db-auditor-mysql.json)
- - Zabbix 6 - Postgresql - **work in progress**
+ - [Zabbix 6 and 7 - MySQL](dashboards/mysql/zabbix-db-auditor-mysql.json)
  - Zabbix 7 - Postgresql - **work in progress**
 
 The repository contains an example of setting up [datasource provisioning](provisioning-example/datasources/).
