@@ -2,6 +2,8 @@
 
 Zabbix DB Auditor is a collection Grafana dashboards designed to analyze Zabbix database size. This tool provides comprehensive visualizations and insights into your Zabbix database, helping you to optimize storage cost.
 
+This dashboard is also published in the [Grafana dashboard](https://grafana.com/grafana/dashboards/22665-zabbix-db-auditor/) collection.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -40,7 +42,7 @@ The dashboard requires access to the Zabbix database.
 
 in first, create user:
  - make your own password
- - make sure MySQL  is not accessible from (container) network
+ - make sure MySQL is not accessible from (container) network
 
 ```sql
 CREATE USER 'zabbix_db_auditor'@'%' IDENTIFIED BY 'pas_WoRD#!sw';
