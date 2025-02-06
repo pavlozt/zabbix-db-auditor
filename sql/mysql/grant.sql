@@ -1,3 +1,5 @@
+-- Execute grants in context of zabbix database. Usually named 'zabbix'
+
 GRANT SELECT (itemid, flags, hostid, name, delay, history, type, master_itemid, templateid)
 ON items
 TO 'zabbix_db_auditor'@'%';
@@ -14,29 +16,29 @@ GRANT SELECT
 ON hstgrp
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT ON zabbix.history
+GRANT SELECT ON history
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT ON zabbix.history_uint
+GRANT SELECT ON history_uint
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT ON zabbix.history_str
+GRANT SELECT ON history_str
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT  ON zabbix.history_log
+GRANT SELECT  ON history_log
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT  ON zabbix.history_text
+GRANT SELECT  ON history_text
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT  ON zabbix.trends
+GRANT SELECT  ON trends
 TO 'zabbix_db_auditor'@'%';
 
-GRANT SELECT ON zabbix.trends_uint
+GRANT SELECT ON trends_uint
 TO 'zabbix_db_auditor'@'%';
 
 
-GRANT SELECT ON zabbix.history_bin
+GRANT SELECT ON history_bin
 TO 'zabbix_db_auditor'@'%';
 
 

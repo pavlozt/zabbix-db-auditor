@@ -31,7 +31,7 @@ This dashboard is also published in the [Grafana dashboard](https://grafana.com/
 Before you begin, ensure you have met the following requirements:
 
 - **Grafana**: Ensure you have [Grafana](https://grafana.com/) 10+ installed and running.
-- **Treemap Plugin**: for Grafana version **older than 11** you need to install a [Treemap Plugin](https://grafana.com/grafana/plugins/marcusolsson-treemap-panel/). Grafana 11 include this pluging.
+- **Treemap Plugin**:  you need to install a [Treemap Plugin](https://grafana.com/grafana/plugins/marcusolsson-treemap-panel/).
 - **Zabbix**: Of course, you need Zabbix. Versions 6.0 and 7.0+ are supported.
 - **Database Access**: Currently the dashboard only supports MYSQL 8.0+. It is necessary to provide access to the Zabbix database and the ability to `GRANT` rights.
 
