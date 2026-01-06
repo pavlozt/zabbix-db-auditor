@@ -40,9 +40,9 @@ Before you begin, ensure you have met the following requirements:
 
 The dashboard requires access to the Zabbix database.
 
-in first, create user:
+In first, create database user:
  - make your own password
- - make sure MySQL is not accessible from (container) network
+ - make sure MySQL is accessible from network ( or from container network)
 
 ```sql
 CREATE USER 'zabbix_db_auditor'@'%' IDENTIFIED BY 'pas_WoRD#!sw';
@@ -52,7 +52,7 @@ GRANT USAGE ON zabbix.* TO 'zabbix_db_auditor'@'%';
 Then execute [grant script](sql/mysql/grant.sql) in zabbix database context.
 The table names in the script are short, that is, this script depends on the launch context.
 
-For zabbix version 6, you need execute another grant script [grant-zabbix-6.sql](sql/mysql/grant-zabbix-6.sql) (without `history_bin` table).
+For zabbix version 6, you need execute another grant script [grant-zabbix-6.sql](sql/mysql/grant-zabbix-6.sql) without `history_bin` table.
 
 It is very important to create limited access to the database.
 Often tables in Zabbix contain a lot of access data. But access to data in Grafana is different from what you would expect. You can read more about this in a separate [post in Grafana Blog](https://grafana.com/blog/2024/05/06/data-source-security-in-grafana-best-practices-and-what-to-avoid/) . Carefully granted access eliminates these problems.
